@@ -548,6 +548,159 @@ def create_modular_structure(base):
     with open(os.path.join(base, "README.md"), "w") as f:
         f.write(f"# {os.path.basename(base)}\nModular template project.\n")
 
+def create_externalapi_structure(base):
+    import os
+
+    # Cria diretórios principais
+    os.makedirs(os.path.join(base, "src", "app"), exist_ok=True)
+    os.makedirs(os.path.join(base, "tests"), exist_ok=True)
+
+    # Cria o arquivo src/server.py com a API FastAPI
+    with open(os.path.join(base, "src", "server.py"), "w") as f:
+        f.write(
+            "from fastapi import FastAPI, HTTPException\n"
+            "from app.external_api import get_external_data\n\n"
+            "app = FastAPI()\n\n"
+            "@app.get('/')\n"
+            "def read_root():\n"
+            "    return {'message': 'Hello from External API Template'}\n\n"
+            "@app.get('/external')\n"
+            "def external():\n"
+            "    try:\n"
+            "        data = get_external_data()\n"
+            "        return {'external_data': data}\n"
+            "    except Exception as e:\n"
+            "        raise HTTPException(status_code=500, detail=str(e))\n"
+        )
+
+    # Cria o arquivo src/app/external_api.py com exemplo de chamada a uma API externa
+    with open(os.path.join(base, "src", "app", "external_api.py"), "w") as f:
+        f.write(
+            "import requests\n\n"
+            "def get_external_data():\n"
+            "    # Exemplo: chamada à API pública de piadas do Chuck Norris\n"
+            "    url = 'https://api.chucknorris.io/jokes/random'\n"
+            "    response = requests.get(url)\n"
+            "    if response.status_code == 200:\n"
+            "        return response.json()\n"
+            "    else:\n"
+            "        raise Exception('Falha ao acessar a API externa')\n"
+        )
+
+    # Cria um arquivo de teste simples em tests/
+    with open(os.path.join(base, "tests", "test_external_api.py"), "w") as f:
+        f.write(
+            "def test_external_api():\n"
+            "    # Implemente seus testes aqui\n"
+            "    assert True\n"
+        )
+
+    # Cria o arquivo requirements.txt
+    with open(os.path.join(base, "requirements.txt"), "w") as f:
+        f.write("fastapi\nuvicorn\nrequests\n")
+
+    # Cria um Dockerfile para containerização
+    with open(os.path.join(base, "Dockerfile"), "w") as f:
+        f.write(
+            "FROM python:3.9-slim\n"
+            "WORKDIR /app\n"
+            "COPY requirements.txt ./\n"
+            "RUN pip install --no-cache-dir -r requirements.txt\n"
+            "COPY src ./src\n"
+            "EXPOSE 8000\n"
+            "CMD [\"uvicorn\", \"src.server:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]\n"
+        )
+
+    # Cria um README.md para o template
+    with open(os.path.join(base, "README.md"), "w") as f:
+        f.write(
+            "# External API Template\n\n"
+            "Este projeto exemplifica como se comunicar com APIs externas utilizando FastAPI e requests.\n\n"
+            "## Rotas\n"
+            "- `GET /` retorna uma mensagem de boas-vindas.\n"
+            "- `GET /external` faz uma chamada à API externa e retorna os dados.\n\n"
+            "## Como Executar\n"
+            "```bash\n"
+            "uvicorn src.server:app --reload\n"
+            "```\n"
+        )
+
+def create_graphql_structure(base):
+    import os
+
+    # Cria diretórios principais
+    os.makedirs(os.path.join(base, "src", "app"), exist_ok=True)
+    os.makedirs(os.path.join(base, "tests"), exist_ok=True)
+
+    # Cria o arquivo que define o schema GraphQL com Strawberry em src/app/graphql_api.py
+    with open(os.path.join(base, "src", "app", "graphql_api.py"), "w") as f:
+        f.write(
+            "import strawberry\n\n"
+            "@strawberry.type\n"
+            "class Query:\n"
+            "    @strawberry.field\n"
+            "    def hello(self) -> str:\n"
+            "        return 'Hello, GraphQL!'\n\n"
+            "schema = strawberry.Schema(query=Query)\n"
+        )
+
+    # Cria o arquivo principal do servidor em src/server.py
+    with open(os.path.join(base, "src", "server.py"), "w") as f:
+        f.write(
+            "from fastapi import FastAPI\n"
+            "import strawberry\n"
+            "from strawberry.asgi import GraphQL\n"
+            "from app.graphql_api import schema\n\n"
+            "app = FastAPI()\n\n"
+            "# Endpoint GraphQL\n"
+            "graphql_app = GraphQL(schema)\n"
+            "app.add_route('/graphql', graphql_app)\n"
+            "app.add_websocket_route('/graphql', graphql_app)\n\n"
+            "@app.get('/')\n"
+            "def read_root():\n"
+            "    return {'message': 'Hello from GraphQL Template'}\n"
+        )
+
+    # Cria um arquivo de teste básico em tests/__init__.py (pode ser vazio)
+    with open(os.path.join(base, "tests", "__init__.py"), "w") as f:
+        f.write("# Testes para o template GraphQL\n")
+
+    # Cria requirements.txt com as dependências necessárias
+    with open(os.path.join(base, "requirements.txt"), "w") as f:
+        f.write("fastapi\nuvicorn\nstrawberry-graphql\n")
+
+    # Cria um Dockerfile para containerização
+    with open(os.path.join(base, "Dockerfile"), "w") as f:
+        f.write(
+            "FROM python:3.9-slim\n"
+            "WORKDIR /app\n"
+            "COPY requirements.txt ./\n"
+            "RUN pip install --no-cache-dir -r requirements.txt\n"
+            "COPY src ./src\n"
+            "EXPOSE 8000\n"
+            "CMD [\"uvicorn\", \"src.server:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]\n"
+        )
+
+    # Cria um README.md para o template
+    with open(os.path.join(base, "README.md"), "w") as f:
+        f.write(
+            "# GraphQL Template\n\n"
+            "Este projeto demonstra como integrar FastAPI com GraphQL utilizando Strawberry.\n\n"
+            "## Rotas\n"
+            "- `GET /` retorna uma mensagem de boas-vindas.\n"
+            "- `POST /graphql` (ou via WebSocket) expõe o endpoint GraphQL.\n\n"
+            "## Como Executar\n"
+            "1. Instale as dependências:\n"
+            "   ```bash\n"
+            "   pip install -r requirements.txt\n"
+            "   ```\n"
+            "2. Rode a aplicação:\n"
+            "   ```bash\n"
+            "   uvicorn src.server:app --reload\n"
+            "   ```\n"
+            "3. Acesse o endpoint GraphQL em [http://127.0.0.1:8000/graphql](http://127.0.0.1:8000/graphql)\n"
+        )
+
 
 @click.group()
 def cli():
@@ -600,8 +753,12 @@ def init(project_name, template, path):
             create_modular_structure(project_path)
         elif template == 'aws':
             create_aws_structure(project_path)
+        elif template == 'create_externalapi':
+            create_externalapi_structure(project_path)
+        elif template == 'create_graphql':
+            create_graphql_structure(project_path)
         else:
-            available = ['default', 'minimal', 'advanced', 'enterprise', 'microservice', 'scalable', 'modular', 'aws']
+            available = ['default', 'minimal', 'advanced', 'enterprise', 'microservice', 'scalable', 'modular', 'aws','create_externalapi', 'create_graphql_structure']
             click.echo(f"Template '{template}' não encontrado. Templates disponíveis: {', '.join(available)}")
             sys.exit(1)
 
